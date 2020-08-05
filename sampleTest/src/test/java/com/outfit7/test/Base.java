@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -17,9 +19,9 @@ import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class BaseTest {
-
-    AppiumDriver<MobileElement> driver;
+class Base {
+    private static final Logger LOG = Logger.getLogger("BaseLog");
+    protected AppiumDriver<MobileElement> driver;
 
     @BeforeAll
     public void initTest() throws Exception {
@@ -38,25 +40,28 @@ class BaseTest {
         capabilities.setCapability("app", absolutePath);
 
         // Create new android driver, the default port for Appium is 4723
-        driver = new AndroidDriver<MobileElement>(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+        driver = new AndroidDriver<>(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
 
         // Default appium timeout for searching elements
         driver.manage().timeouts().implicitlyWait(8, TimeUnit.SECONDS);
     }
 
     private void prepareState() throws InterruptedException, IOException, NotFoundException {
+        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
         Dimension windowSize = driver.manage().window().getSize();
 
         // Wait for first element so we can continue
         driver.findElement(By.id("com.outfit7.talkingtom:id/sharingAgeScreeningButtonOk"));
 
         // Swipe to get to some age
-        String command = String.format("adb shell input swipe %1$s %2$s %3$s %4$s %5$s", windowSize.width * 0.5, windowSize.height * 0.5, windowSize.width * 0.5,
-                windowSize.height * 0.7, 1000);
-        Runtime.getRuntime().exec(command);
+        String command = String.format("adb shell input swipe %1$s %2$s %3$s %4$s", windowSize.width * 0.5, windowSize.height * 0.5, windowSize.width * 0.5, windowSize.height * 0.7);
 
-        // Wait for animation to end
-        Thread.sleep(2000);
+        if (isWindows) {
+            new ProcessBuilder("cmd", "/c", command).inheritIO().start().waitFor();
+        } else {
+            // TODO: needs testing
+            new ProcessBuilder("sh", "-c", command).inheritIO().start().waitFor();
+        }
 
         // Click button ok to continue
         driver.findElement(By.id("com.outfit7.talkingtom:id/sharingAgeScreeningButtonOk")).click();
@@ -72,6 +77,6 @@ class BaseTest {
 
         // Check if we are in main room
         driver.findElement(By.id("com.outfit7.talkingtom:id/foodButton"));
-        System.out.println("###We are in main room###");
+        LOG.log(Level.INFO, "### We are in main room ###");
     }
 }
