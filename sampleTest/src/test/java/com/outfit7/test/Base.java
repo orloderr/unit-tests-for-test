@@ -22,6 +22,8 @@ import io.appium.java_client.android.AndroidDriver;
 class Base {
     private static final Logger LOG = Logger.getLogger("BaseLog");
     protected AppiumDriver<MobileElement> driver;
+    protected boolean isWindows;
+    protected Dimension windowSize;
 
     @BeforeAll
     public void initTest() throws Exception {
@@ -47,27 +49,23 @@ class Base {
     }
 
     private void prepareState() throws InterruptedException, IOException, NotFoundException {
-        boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
-        Dimension windowSize = driver.manage().window().getSize();
+        isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+        windowSize = driver.manage().window().getSize();
 
         // Wait for first element so we can continue
         driver.findElement(By.id("com.outfit7.talkingtom:id/sharingAgeScreeningButtonOk"));
 
         // Swipe to get to some age
-        String command = String.format("adb shell input swipe %1$s %2$s %3$s %4$s", windowSize.width * 0.5, windowSize.height * 0.5, windowSize.width * 0.5, windowSize.height * 0.7);
-
-        if (isWindows) {
-            new ProcessBuilder("cmd", "/c", command).inheritIO().start().waitFor();
-        } else {
-            // TODO: needs testing
-            new ProcessBuilder("sh", "-c", command).inheritIO().start().waitFor();
-        }
+        sendShellCommandAndWaitForItsTermination(
+                String.format("adb shell input swipe %1$s %2$s %3$s %4$s", windowSize.width * 0.5,
+                        windowSize.height * 0.5, windowSize.width * 0.5, windowSize.height * 0.7));
 
         // Click button ok to continue
         driver.findElement(By.id("com.outfit7.talkingtom:id/sharingAgeScreeningButtonOk")).click();
 
         // Sometimes we get asked for special permission
-        MobileElement allowPermissionButton = driver.findElement(By.id("com.android.packageinstaller:id/permission_allow_button"));
+        MobileElement allowPermissionButton = driver
+                .findElement(By.id("com.android.packageinstaller:id/permission_allow_button"));
         if (allowPermissionButton != null) {
             allowPermissionButton.click();
         }
@@ -78,5 +76,25 @@ class Base {
         // Check if we are in main room
         driver.findElement(By.id("com.outfit7.talkingtom:id/foodButton"));
         LOG.log(Level.INFO, "### We are in main room ###");
+    }
+
+    /**
+     * Sends a given command to a command shell: Command Line (on Windows) or Bash (on Linux). Waits for the command
+     * execution termination.
+     *
+     * @param command
+     *         command to execute
+     * @throws IOException
+     *         if an I/O error occurs at the execution start
+     * @throws InterruptedException
+     *         if the waiting for the execution terminating
+     */
+    protected void sendShellCommandAndWaitForItsTermination(String command) throws IOException, InterruptedException {
+        if (isWindows) {
+            new ProcessBuilder("cmd", "/c", command).inheritIO().start().waitFor();
+        } else {
+            // TODO: needs testing
+            new ProcessBuilder("sh", "-c", command).inheritIO().start().waitFor();
+        }
     }
 }

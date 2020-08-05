@@ -13,6 +13,7 @@ class InfoTest extends Base {
         driver.findElement(By.id("com.outfit7.talkingtom:id/buttonInfo")).click();
         driver.findElement(By.id("com.outfit7.talkingtom:id/infoWebButtonHowToPlay")).click();
 
-        Assertions.assertTrue(driver.getPageSource().contains("Talk to Tom and he repeats with a funny voice"), "There is no given text.");
+        Assertions.assertTrue(driver.getPageSource().contains("Talk to Tom and he repeats with a funny voice"),
+                "There is no given text.");
     }
 }

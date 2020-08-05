@@ -8,7 +8,7 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import  org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,8 @@ class FoodTest extends Base {
 
         Assertions.assertTrue(driver.getPageSource().contains("Cake"), "There is no cake scene at all!");
 
-        File screenshot = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(screenshot, new File(String.format("%s\\%s", System.getProperty("user.dir"), "eatingTom.png")));
+        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        FileUtils.copyFile(screenshot,
+                new File(String.format("%s\\%s", System.getProperty("user.dir"), "eatingTom.png")));
     }
 }
