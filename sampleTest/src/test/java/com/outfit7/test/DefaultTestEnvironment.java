@@ -2,6 +2,7 @@ package com.outfit7.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -11,27 +12,35 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.NotFoundException;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
 
+/**
+ * Base class that prepares am main scene in "Talking Tom" application as a test environment.
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class Base {
-    private static final Logger LOG = Logger.getLogger("BaseLog");
+class DefaultTestEnvironment {
+    private static final Logger LOG = Logger.getLogger("DefaultTestEnvironmentLog");
     protected AppiumDriver<MobileElement> driver;
     protected boolean isWindows;
     protected Dimension windowSize;
 
     @BeforeAll
-    public void initTest() throws Exception {
-        startAppiumConnection();
-        prepareState();
+    public void prepareTestEnvironment() throws Exception {
+        startAppiumConnectionAndLoadApplication();
+        prepareApplicationMainRoom();
     }
 
-    private void startAppiumConnection() throws Exception {
+    /**
+     * Establishes an Appium connection to the device and loads an application.
+     *
+     * @throws MalformedURLException
+     *         thrown when a given Appium server address is wrong
+     */
+    private void startAppiumConnectionAndLoadApplication() throws MalformedURLException {
         // Set driver capabilities
         DesiredCapabilities capabilities = new DesiredCapabilities();
         capabilities.setCapability("fullReset", "true");
@@ -48,7 +57,15 @@ class Base {
         driver.manage().timeouts().implicitlyWait(8, TimeUnit.SECONDS);
     }
 
-    private void prepareState() throws InterruptedException, IOException, NotFoundException {
+    /**
+     * Passes through all preparation dialogues and stays in the main room of the application.
+     *
+     * @throws IOException
+     *         if an I/O error occurs at the command execution start
+     * @throws InterruptedException
+     *         if the waiting for the command execution terminating
+     */
+    private void prepareApplicationMainRoom() throws IOException, InterruptedException {
         isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
         windowSize = driver.manage().window().getSize();
 
