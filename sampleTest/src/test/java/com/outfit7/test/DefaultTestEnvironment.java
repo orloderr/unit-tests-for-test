@@ -17,9 +17,10 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
- * Base class that prepares am main scene in "Talking Tom" application as a test environment.
+ * Base class that prepares a main scene in "Talking Tom" application as a test environment.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DefaultTestEnvironment {
@@ -27,11 +28,13 @@ class DefaultTestEnvironment {
     protected AppiumDriver<MobileElement> driver;
     protected boolean isWindows;
     protected Dimension windowSize;
+    protected WebDriverWait waitForApp;
 
     @BeforeAll
     public void prepareTestEnvironment() throws Exception {
         startAppiumConnectionAndLoadApplication();
         prepareApplicationMainRoom();
+        waitForApp = new WebDriverWait(driver, 1);
     }
 
     /**

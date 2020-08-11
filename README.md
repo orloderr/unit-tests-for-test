@@ -1,26 +1,20 @@
 # unit-tests-for-test
 ## General information
-This test project consists of four test classes:
-* feeding Tom (`FoodTest`);
-* reading text from "How To Play" instructions (`InfoTest`);
-* custom test for touchscreen interactions with Tom (`TouchTest`);
-* test class is a combination of three previous classes (`UserInteractionTest`).
-
-Reinstalling the APK before each test class running is quite a time-consuming process. That is why there is the fourth test class (`UserInteractionTest`).
-
-Though at the same it is a bad practice to have tests depending on a result of each other (for example, the "Info" page needs to be closed before the next test, or the feeding animation must clearly end).
+This test project consists of two classes:
+* `DefaultTestEnvironment` class preparing a test environment (loads the game into the main scene);
+* `UserInteractionTest` class with three different tests covering some user interactions with the game: feeding, checking "Info" page and video recording tool.
 
 ## Custom test scenario
+The custom test is covered in `recordVideoCheckSharingWindowAndCloseTest` test method.
 
-### Problem
-Tom needs to react with certain animation to a swipe movement and with another to a tap on a screen.
+### Requirement
+When a user pushed the record video button two times, a menu with play button and sharing options must open.
 
 ### Verification
 1. Prepare the application's main scene.
-2. Make a swipe movement in the middle of a screen.
-3. Verify that Tom has a "happy cat face" reaction to the swipe.
-4. Tap in the middle of a screen.
-5. Verify that Tom reacts with knocked animation.  
+2. Press a video recording button.
+2. Press a video recording button again.
+5. Verify that a menu with sharing options and play button appeared on the screen.  
 
 
 

@@ -2,15 +2,16 @@ package com.outfit7.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * This test class contains all three tests. This way the @BeforeAll method is executed only once at the beginning,
@@ -33,47 +34,47 @@ class UserInteractionTest extends DefaultTestEnvironment {
     }
 
     /**
-     * Clicks on "Food" button, feeds a cake to Tom, checks for cake animation and makes a screenshot.
+     * Clicks on "Food" button, feeds a cake to Tom, checks for HUD absence/existence and makes a screenshot.
      *
      * @throws IOException
      *         thrown if there is a problem with saving a screenshot
      */
     @Test
     void feedCakeMakeScreenshotTest() throws IOException {
-        WebDriverWait waitForApp = new WebDriverWait(driver, 1);
-
         driver.findElement(By.id("com.outfit7.talkingtom:id/foodButton")).click();
         waitForApp.until(ExpectedConditions.elementToBeClickable(By.id("com.outfit7.talkingtom:id/foodItemCake")));
         driver.findElement(By.id("com.outfit7.talkingtom:id/foodItemCake")).click();
 
-        // TODO: verify that the cake animation has started/is playing
+        // When food animation is played, the game HUD is hidden. Check if the food container is removed form the
+        // screen when cake animation is requested.
+        Assertions.assertTrue(waitForApp.until(ExpectedConditions
+                .invisibilityOf(driver.findElement(By.id("com.outfit7.talkingtom:id/foodItemsContainer")))));
 
         File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
         FileUtils.copyFile(screenshot,
                 new File(String.format("%s\\%s", System.getProperty("user.dir"), "eatingTom.png")));
 
-        // TODO: wait until the animation is finished
+        // The game HUD comes back after the food animation. Assert its element returns to the screen.
+        // Awaitility is used instead of WebDriverWait because `driver.findElement` immediately throws an exception
+        // and fails the test.
+        Awaitility.await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> Assertions
+                .assertTrue(driver.getPageSource().contains("com.outfit7.talkingtom:id/foodItemsContainer")));
     }
 
     /**
-     * Swipes on a screen and checks if Tom is enjoying the pets.
-     *
-     * @throws IOException
-     *         thrown if an I/O error occurs at the swipe execution start
-     * @throws InterruptedException
-     *         thrown if the waiting for the swipe execution terminating is interrupted
+     * Records a video and checks if a menu with sharing options appear.
      */
     @Test
-    void petAndPokeTest() throws IOException, InterruptedException {
-        sendShellCommandAndWaitForItsTermination(
-                String.format("adb shell input swipe %1$s %2$s %3$s %4$s", windowSize.width * 0.5,
-                        windowSize.height * 0.5, windowSize.width * 0.5, windowSize.height * 0.7));
+    void recordVideoCheckSharingWindowAndCloseTest() {
+        driver.findElement(By.id("com.outfit7.talkingtom:id/recorderButton")).click();
+        driver.findElement(By.id("com.outfit7.talkingtom:id/recorderButton")).click();
 
-        // TODO: assert that an animation is playing: Tom is purring/has a pleased face
+        Assertions.assertTrue(driver.findElement(By.id("com.outfit7.talkingtom:id/recorderMenuMainMenu")).isDisplayed(),
+                "There is no requested menu.");
+        Assertions
+                .assertTrue(driver.findElement(By.id("com.outfit7.talkingtom:id/recorderMenuButtonPlay")).isDisplayed(),
+                        "There is no requested button.");
 
-        sendShellCommandAndWaitForItsTermination(
-                String.format("adb shell input tap %1$s %2$s", windowSize.width * 0.5, windowSize.height * 0.5));
-
-        // TODO: assert that an animation is playing: Tom is kicked/poked
+        driver.findElement(By.id("com.outfit7.talkingtom:id/recorderMenuButtonClose")).click();
     }
 }
